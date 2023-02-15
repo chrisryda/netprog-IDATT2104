@@ -11,50 +11,72 @@ class Workers {
 public:
     int n_threads;
     vector<thread> worker_threads;
-    list<function<void()>> tasks;
-    mutex task_mutex;
     
-    bool wait = true;
-    mutex wait_mutex;
+    bool stop_threads = false;
+    bool stop_threads_on_completion = false;
+    
+    list<function<void()>> tasks;
     condition_variable cv;
-
-    bool run = true;
+    mutex mtx;
 
     Workers () {}
     Workers (int n_threads_) : n_threads(n_threads_) {}
 
     void start() {
         for (int i = 0; i < n_threads; i++) {
-            worker_threads.emplace_back([this, &run = run, &wait = wait, &wait_mutex = wait_mutex, &cv = cv] {
-                while (run) {
-                    unique_lock<mutex> lock(wait_mutex);
-                    while (wait) {
-                        cv.wait(lock);
-                    }
+            worker_threads.emplace_back([this] {
+                while (true) {
                     function<void()> task;
-                    if (!tasks.empty()) {
+                    {
+                        unique_lock<mutex> lock(mtx);
+                        while (tasks.empty() && !stop_threads) {
+                            cv.wait(lock);
+                        }
+                        if (tasks.empty() && stop_threads) {
+                            return;
+                        }
                         task = *tasks.begin();
                         tasks.pop_front();
                     }
-                    if (task) {
-                        task();
+                    task();
+                    
+                    unique_lock<mutex> lock(mtx);
+                    if (stop_threads_on_completion && tasks.empty()) {
+                        stop_threads = true;
+                        lock.unlock();
+                        cv.notify_all(); // Notify all other worker threads to stop
+                        return;
                     }
                 }
             });
         }
     }   
 
-    void post(const function<void()> &function) {
+    void post(const function<void()> &task) {
         {
-            unique_lock<mutex> lock(task_mutex);
-            tasks.emplace_back(function);
-        }
-        {
-            unique_lock<mutex> lock(wait_mutex);
-            wait = false;
-        }
-        cv.notify_all();
+			unique_lock<mutex> lock(mtx);
+			tasks.emplace_back(task);
+		}
+		cv.notify_one();
     }
+
+    void post_timeout(const function<void()> &task, int ms) {
+		this_thread::sleep_for(chrono::milliseconds(ms));
+		post(task);
+	}
+
+    void stop() {
+		{
+			unique_lock<mutex> lock(mtx);
+			if (tasks.empty()) { 
+				stop_threads = true;
+				lock.unlock();
+				cv.notify_all();
+			} else {
+				stop_threads_on_completion = true;
+            }
+		}
+	}
 
     void join() {
         for (auto &t : worker_threads) {
@@ -63,8 +85,8 @@ public:
     }
 };
 
-// TODO: Implement stop() and post_timeout()
 int main() {
+
     Workers worker_threads(4);
     Workers event_loop(1);
 
@@ -126,6 +148,9 @@ int main() {
             << this_thread::get_id()
             << endl;
     });
+
+    worker_threads.stop();
+    event_loop.stop();
 
     worker_threads.join();
     event_loop.join();
