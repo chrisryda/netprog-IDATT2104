@@ -65,10 +65,15 @@ class SocketThread extends Thread {
             case "-":
                 result = a - b;
 				break;
+            case "/":
+                result = a / b;
+                break;
+            case "*":
+                result = a * b;
+                break;
             default:
                 throw new IllegalArgumentException("Invalid operator");
         }
-
         return result;
     }
 }
