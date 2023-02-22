@@ -5,14 +5,10 @@ import java.util.Scanner;
 class SocketClient {
 	public static void main(String[] args) throws IOException {
 		final int PORTNR = 1250;
-
-		Scanner readFromTerminal = new Scanner(System.in);
-		System.out.print("Enter the name of the computer running the server: ");
-		String serverName = readFromTerminal.nextLine();
-
-		Socket connection = new Socket(serverName, PORTNR);
+		Socket connection = new Socket("localhost", PORTNR);
 		System.out.println("Connection established.");
-
+		
+		Scanner readFromTerminal = new Scanner(System.in);
 		InputStreamReader readStream = new InputStreamReader(connection.getInputStream());
 		BufferedReader reader = new BufferedReader(readStream);
 		PrintWriter writer = new PrintWriter(connection.getOutputStream(), true);
