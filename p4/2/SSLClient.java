@@ -23,11 +23,8 @@ public class SSLClient {
                 while(true){
                     System.out.println("\nEnter something:");
                     String inputLine = scanner.nextLine();
-                    if (inputLine.equals("q")){
-                        break;
-                    }
-                    
                     out.println(inputLine);
+                    if (inputLine.equals("q")) {break;}
                     System.out.println("From server: " + bufferedReader.readLine());
                 }
             }   
