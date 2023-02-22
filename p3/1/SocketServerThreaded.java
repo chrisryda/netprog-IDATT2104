@@ -5,6 +5,7 @@ class SocketServerThreaded {
 	public static void main(String[] args) throws IOException {
 		final int PORTNR = 1250;
 		ServerSocket server = new ServerSocket(PORTNR);
+		System.out.println("Server ready and waiting");
 		while (true) {
 			Socket socket = server.accept();
 			new SocketThread(socket).start();
