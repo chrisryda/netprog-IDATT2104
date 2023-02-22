@@ -16,7 +16,7 @@ public class UDPClient {
         System.out.println("Write an expression adding, subtracting, dividing or multiplying two numbers seperated by space, e.g. '1 + 1'");
         System.out.println("Quit by sending an empty line.");
         System.out.println();
-        while (!msg.isBlank()) {
+        while (true) {
             datagramSocket = new DatagramSocket();
             byte[] buf = new byte[1054];
 
@@ -25,6 +25,7 @@ public class UDPClient {
             DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 8080);
             String sentMsg = new String(packet.getData());
             datagramSocket.send(packet);
+            if (msg.isBlank()) {break;}
             
             
             packet = new DatagramPacket(buf, buf.length, address, 8080);

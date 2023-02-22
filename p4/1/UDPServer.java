@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -11,12 +10,12 @@ public class UDPServer {
         System.out.println("Server Start");
         String received = "init";
         
-        while (!received.isBlank()) 
-        {
+        while (true) {
             byte[] buf = new byte[1054];
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             datagramSocket.receive(packet);
             received = new String(packet.getData()).trim();
+            if (received.isBlank()) {break;}
             System.out.println("Received: " + received);
 
             double result = calculate(received);
