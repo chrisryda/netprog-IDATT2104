@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-class SimpleWebClient {
+class SimpleWebServer {
 	public static void main(String[] args) throws IOException {
 		final int PORTNR = 8080;
 
