@@ -18,7 +18,7 @@ public class UDPClient {
         System.out.println();
         while (true) {
             datagramSocket = new DatagramSocket();
-            byte[] buf = new byte[1054];
+            byte[] buf = new byte[256];
 
             msg = input.readLine();
             System.arraycopy(msg.getBytes(), 0, buf, 0, msg.getBytes().length);
