@@ -1,0 +1,53 @@
+package p5.compilerserver.controller;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.web.bind.annotation.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import p5.compilerserver.model.Code;
+
+@CrossOrigin
+@RestController
+@EnableAutoConfiguration
+public class Controller {
+    
+    @PostMapping("/compile")
+    public String compile(@RequestBody Code code) {
+
+        System.out.println(code.getCode());
+        String res = fileTesting(code.getCode());
+        System.out.println(res);
+        return res;
+    }
+
+    String fileTesting(String code) {
+        try {
+            File myObj = new File("compiler-server/src/main/java/p5/compilerserver/compile/main.cpp");
+            myObj.createNewFile();
+            FileWriter myWriter = new FileWriter("compiler-server/src/main/java/p5/compilerserver/compile/main.cpp");
+            myWriter.write(code);
+            myWriter.close();
+
+            Process process = Runtime.getRuntime().exec("docker build compiler-server/src/main/java/p5/compilerserver/compile/ -t gcc");
+            process = Runtime.getRuntime().exec("docker run --rm gcc:latest"); // TODO: Async
+            String res = getCmdOutput(process).toString();
+            return res;
+          } catch (IOException e) {
+            e.printStackTrace();
+            return "An error occurred.";
+          }
+    }
+
+    public static StringBuilder getCmdOutput(Process process) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        StringBuilder strBuilder = new StringBuilder();
+        String line = "";
+        while ((line = reader.readLine()) != null) {
+            strBuilder.append(line + "\n");
+        }
+        return strBuilder;
+    }
+}
