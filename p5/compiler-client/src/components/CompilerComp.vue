@@ -2,7 +2,7 @@
   <div id="input">
     <h1>Welcome to the compiler!</h1>
     <h3>Enter C++ code you want to compile below</h3>
-    <textarea v-model="message" placeholder="Multiple lines bby"></textarea>
+    <textarea v-model="message"></textarea>
   </div>
   <div id="compileButton">
     <button v-on:click="compile">Compile</button>
@@ -18,7 +18,8 @@ export default {
   name: "CompilerComp",
   data: function () {
     return {
-      message: "",
+      message:
+        '#include <iostream>\n\nint main() {\n  std::cout << "Hello Docker!" << std::endl;\n}',
       output: "",
     };
   },
@@ -30,7 +31,7 @@ export default {
       };
 
       const compRes = doCompile(compReq);
-      compRes.then((result) => {
+      await compRes.then((result) => {
         this.output = result;
       });
     },
