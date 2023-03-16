@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>WebSocket chat</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<style>
+		*,
+		html {
+			margin: 0;
+			padding: 0;
+			border: 0;
+			font-family: "Trebuchet MS", Helvetica, sans-serif;
+		}
+
+		.content {
+			padding: 10px;
+			display: grid;
+			grid-template-rows: auto 1fr auto auto;
+			grid-gap: 10px;
+			max-width: 500px;
+			margin: 0 auto;
+			height: calc(100vh - 20px);
+		}
+
+		#messages {
+			padding: 10px;
+			background-color: rgb(140, 185, 225);
+			border: 1px solid black;
+			overflow-y: auto;
+		}
+
+		.message {
+			color: black;
+			padding: 10px;
+			border-radius: 5px 5px 5px 0;
+			border: 1px solid black;
+			background-color: aliceblue;
+			margin-bottom: 5px;
+		}
+
+		h1 {
+			font-size: 40px;
+			padding-top: 30px;
+			padding-bottom: 10px;
+		}
+
+		.input {
+			display: flex;
+			flex-direction: column;
+		}
+
+		input {
+			color: black;
+			padding: 20px;
+			border: 1px solid black;
+			resize: none;
+			font-family: monospace;
+		}
+
+		button {
+			color: black;
+			padding: 20px;
+			border: 1px solid black;
+			cursor: pointer;
+			font-size: 20px;
+			font-weight: bold;
+			padding-bottom: 20px;
+		}
+
+		@media screen and (max-width: 600px) {
+			h1 {
+				font-size: 60px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<form class="content" onsubmit="submitForm(event)">
+		<div>
+			<h1>WebSocket chat</h1>
+			<h2>Connected clients: <span id="connected">0</span></h2>
+		</div>
+		<div id="messages"></div>
+		<div class="input">
+			<input placeholder="Write message here" id="inputArea" width="100%" name="inputArea" type="text" />
+		</div>
+		<button type="submit">Send message</button>
+	</form>
+	<script>
+		const inputArea = document.getElementById("inputArea");
+		const messages = document.getElementById("messages");
+		const connected = document.getElementById("connected");
+		const ws = new WebSocket("ws://localhost:8080", ["json"]);
+
+		ws.addEventListener("message", (event) => {
+			const data = JSON.parse(event.data);
+			console.log(data);
+			if (data.message) {
+				messages.innerHTML += `<div class="message">${data.message}</div>`;
+			} else if (data.connected) {
+				connected.innerHTML = data.connected;
+			}
+		});
+
+		const submitForm = async (e) => {
+			e.preventDefault();
+			if (inputArea.value !== "") {
+				const json = JSON.stringify({ message: inputArea.value });
+				ws.send(json);
+				inputArea.value = "";
+			}
+		};
+	</script>
+</body>
+</html>
